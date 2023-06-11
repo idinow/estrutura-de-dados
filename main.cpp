@@ -1,8 +1,8 @@
 /* Estruturas de Dados - Trabalho pratico
 
 Professor: Diego P. Rubert
-Aluno(s): 
-
+Aluno: Wellington Evangelista Idino - 2020.1907.036.-4
+Aluno: Joao Victor de Oliveira Brigido - 2018.1906.040-3
 */
 
 #include <cstdio>
@@ -84,7 +84,7 @@ int main(void)
   printf("Valores de T em ordem crescente: ");
   T.escreve_ordenado(); //TODO: implemente depois escreve_ordenado
 
-  return 0; //TODO: remover após implementar minimo, maximo, sucessor, predecessor
+  // return 0; //TODO: remover após implementar minimo, maximo, sucessor, predecessor
 
   No *raiz = T.get_raiz();
   printf("Raiz: ");
@@ -109,7 +109,7 @@ int main(void)
   printf("Máximo: ");
   maximo->escreve("\n");
 
-  return 0; //TODO: remover após implementar remoção
+//   return 0; //TODO: remover após implementar remoção
 
   T.remove(0); // Caso 1
   T.remove(13); // Caso 2
@@ -118,7 +118,7 @@ int main(void)
   printf("T:\n");
   T.escreve();
 
-  return 0; //TODO: remover após implementar construtor de cópia e operador de atribuição
+//   return 0; //TODO: remover após implementar construtor de cópia e operador de atribuição
   
   ArvBinBusca T2(T); // construtor de cópia
   T2.insere(30);
@@ -189,12 +189,12 @@ void ArvBinBusca::escreve_ordenado() {
 }
 
 void ArvBinBusca::escreve_ordenado(No *x) {
-    if (x == nullptr)
-    return;
-
-    escreve_ordenado(x->esq);
-    x->escreve(" ");
-    escreve_ordenado(x->dir);
+  // Método recursivo para escrever os elementos em ordem crescente
+  if (x != nullptr) {
+    escreve_ordenado(x->esq); // Chama recursivamente para o nó da esquerda
+    x->escreve(); // Escreve o valor do nó atual
+    escreve_ordenado(x->dir); // Chama recursivamente para o nó da direita
+  }
 }
 
 void ArvBinBusca::escreve() {
@@ -228,8 +228,15 @@ No *ArvBinBusca::busca(int k) {
   return busca(raiz, k);
 }
 
-No *ArvBinBusca::busca(No *x, int k) {
-  //TODO: implementar
+No* ArvBinBusca::busca(No* x, int k) {
+  // Método recursivo para buscar um elemento na árvore
+  if (x == nullptr || k == x->chave)
+    return x;
+
+  if (k < x->chave)
+    return busca(x->esq, k); // Chama recursivamente para o nó da esquerda
+  else
+    return busca(x->dir, k); // Chama recursivamente para o nó da direita
 }
 
 No *ArvBinBusca::minimo() {
@@ -237,7 +244,11 @@ No *ArvBinBusca::minimo() {
 }
 
 No *ArvBinBusca::minimo(No *x) {
-  //TODO: implementar
+  // Retorna o nó com a menor chave na subárvore enraizada em x
+  while (x->esq != nullptr)
+    x = x->esq;
+
+  return x;
 }
 
 No *ArvBinBusca::maximo() {
@@ -245,15 +256,39 @@ No *ArvBinBusca::maximo() {
 }
 
 No *ArvBinBusca::maximo(No *x) {
-  //TODO: implementar
+  // Retorna o nó com a maior chave na subárvore enraizada em x
+  while (x->dir != nullptr)
+    x = x->dir;
+
+  return x;
 }
 
 No *ArvBinBusca::sucessor(No *x) {
-  //TODO: implementar
+  // Retorna o nó sucessor de x na árvore
+  if (x->dir != nullptr)
+    return minimo(x->dir);
+
+  No* y = x->pai;
+  while (y != nullptr && x == y->dir) {
+    x = y;
+    y = y->pai;
+  }
+
+  return y;
 }
 
 No *ArvBinBusca::predecessor(No *x) {
-  //TODO: implementar
+  // Retorna o nó predecessor de x na árvore
+  if (x->esq != nullptr)
+    return maximo(x->esq);
+
+  No* y = x->pai;
+  while (y != nullptr && x == y->esq) {
+    x = y;
+    y = y->pai;
+  }
+
+  return y;
 }
 
 void ArvBinBusca::insere(int chave) {
@@ -291,7 +326,15 @@ void ArvBinBusca::insere(No *z) { // implementado
 }
 
 void ArvBinBusca::transplante(No *u, No *v) {
-  //TODO: implementar
+  if (u->pai == nullptr)
+    raiz = v;
+  else if (u == u->pai->esq)
+    u->pai->esq = v;
+  else
+    u->pai->dir = v;
+
+  if (v)
+    v->pai = u->pai;
 }
 
 bool ArvBinBusca::remove(int chave) {
@@ -305,7 +348,22 @@ bool ArvBinBusca::remove(int chave) {
 }
 
 void ArvBinBusca::remove(No *z) {
-  //TODO: implementar
+  // Remove o nó z da árvore
+  if (z->esq == nullptr)
+    transplante(z, z->dir);
+  else if (z->dir == nullptr)
+    transplante(z, z->esq);
+  else {
+    No* y = minimo(z->dir);
+    if (y->pai != z) {
+      transplante(y, y->dir);
+      y->dir = z->dir;
+      y->dir->pai = y;
+    }
+    transplante(z, y);
+    y->esq = z->esq;
+    y->esq->pai = y;
+  }
 }
 
 void ArvBinBusca::limpa() {
@@ -314,7 +372,12 @@ void ArvBinBusca::limpa() {
 }
 
 void ArvBinBusca::limpa(No *x) {
-  //TODO: implementar
+  // Limpa todos os nós da árvore
+  if (x != nullptr) {
+    limpa(x->esq); // Chama recursivamente para o nó da esquerda
+    limpa(x->dir); // Chama recursivamente para o nó da direita
+    delete x; // Deleta o nó atual
+  }
 }
 
 void ArvBinBusca::copia(const ArvBinBusca& T) {
@@ -326,6 +389,21 @@ void ArvBinBusca::copia(const ArvBinBusca& T) {
   }
 }
 
-void ArvBinBusca::copia(No *dest, No *orig) {
-  //TODO: implementar
+void ArvBinBusca::copia(No* dest, No* orig) {
+  if (orig == nullptr)
+    return;
+
+  dest->chave = orig->chave;
+
+  if (orig->esq != nullptr) {
+    dest->esq = new No(0); // Cria um novo nó à esquerda
+    dest->esq->pai = dest; // Define o pai do novo nó
+    copia(dest->esq, orig->esq); // Faz a cópia recursiva para a subárvore esquerda
+  }
+
+  if (orig->dir != nullptr) {
+    dest->dir = new No(0); // Cria um novo nó à direita
+    dest->dir->pai = dest; // Define o pai do novo nó
+    copia(dest->dir, orig->dir); // Faz a cópia recursiva para a subárvore direita
+  }
 }
